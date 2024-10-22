@@ -1,19 +1,3 @@
-/*
-Copyright 2022 Google LLC
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    https://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
- */
-
 package com.example.makeitso.screens.tasks
 
 import android.annotation.SuppressLint
@@ -28,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.makeitso.R.drawable as AppIcon
 import com.example.makeitso.R.string as AppText
 import com.example.makeitso.common.composable.ActionToolbar
@@ -42,7 +27,11 @@ fun TasksScreen(
   openScreen: (String) -> Unit,
   viewModel: TasksViewModel = hiltViewModel()
 ) {
+  // Recoger el estado de las tareas desde el ViewModel
+  val tasks by viewModel.tasks.collectAsStateWithLifecycle(initialValue = emptyList())
+
   TasksScreenContent(
+    tasks = tasks,  // Pasamos la lista de tareas al contenido
     onAddClick = viewModel::onAddClick,
     onSettingsClick = viewModel::onSettingsClick,
     onTaskCheckChange = viewModel::onTaskCheckChange,
@@ -57,6 +46,7 @@ fun TasksScreen(
 @Composable
 @ExperimentalMaterialApi
 fun TasksScreenContent(
+  tasks: List<Task>, // Cambia el parámetro para recibir la lista de tareas
   modifier: Modifier = Modifier,
   onAddClick: ((String) -> Unit) -> Unit,
   onSettingsClick: ((String) -> Unit) -> Unit,
@@ -86,8 +76,9 @@ fun TasksScreenContent(
 
       Spacer(modifier = Modifier.smallSpacer())
 
+      // Aquí es donde se actualiza LazyColumn para usar el valor de tasks
       LazyColumn {
-        items(emptyList<Task>(), key = { it.id }) { taskItem ->
+        items(tasks, key = { it.id }) { taskItem ->
           TaskItem(
             task = taskItem,
             options = listOf(),
@@ -106,6 +97,7 @@ fun TasksScreenContent(
 fun TasksScreenPreview() {
   MakeItSoTheme {
     TasksScreenContent(
+      tasks = listOf(),  // Previsualización vacía
       onAddClick = { },
       onSettingsClick = { },
       onTaskCheckChange = { },
